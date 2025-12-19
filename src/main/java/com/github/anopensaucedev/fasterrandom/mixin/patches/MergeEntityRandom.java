@@ -1,8 +1,8 @@
 package com.github.anopensaucedev.fasterrandom.mixin.patches;
 
 import com.github.anopensaucedev.fasterrandom.FasterRandom;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,6 +12,6 @@ public class MergeEntityRandom {
 
 	@Final
 	@Shadow
-	protected final Random random = FasterRandom.GLOBAL_LOCAL_INSTANCE;
+	protected final RandomSource random = FasterRandom.GLOBAL_LOCAL_INSTANCE;
 
 }

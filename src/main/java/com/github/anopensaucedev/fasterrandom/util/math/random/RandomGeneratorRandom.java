@@ -1,16 +1,17 @@
 package com.github.anopensaucedev.fasterrandom.util.math.random;
 
 import com.google.common.annotations.VisibleForTesting;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.BaseRandom;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.math.random.RandomSplitter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.BitRandomSource;
+import net.minecraft.world.level.levelgen.PositionalRandomFactory;
+import org.jspecify.annotations.NonNull;
 
-public class RandomGeneratorRandom implements BaseRandom {
+public class RandomGeneratorRandom implements BitRandomSource {
 	private static final @NotNull RandomGeneratorFactory<RandomGenerator.SplittableGenerator> RANDOM_GENERATOR_FACTORY = RandomGeneratorFactoryUtil.getRandomGeneratorFactory();
 	private static final int INT_BITS = 48;
 	private static final long SEED_MASK = 0xFFFFFFFFFFFFL;
@@ -26,12 +27,12 @@ public class RandomGeneratorRandom implements BaseRandom {
 	}
 
 	@Override
-	public Random split() {
+	public RandomSource fork() {
 		return new RandomGeneratorRandom(this.nextLong());
 	}
 
 	@Override
-	public RandomSplitter nextSplitter() {
+	public PositionalRandomFactory forkPositional() {
 		return new Splitter(this.nextLong());
 	}
 
@@ -82,26 +83,26 @@ public class RandomGeneratorRandom implements BaseRandom {
 		return randomGenerator.nextGaussian();
 	}
 
-	private record Splitter(long seed) implements RandomSplitter {
+	private record Splitter(long seed) implements PositionalRandomFactory {
 		@SuppressWarnings("deprecation")
 		@Override
-		public @NotNull Random split(int x, int y, int z) {
-			return new RandomGeneratorRandom(MathHelper.hashCode(x, y, z) ^ this.seed);
+		public @NotNull RandomSource at(int x, int y, int z) {
+			return new RandomGeneratorRandom(Mth.getSeed(x, y, z) ^ this.seed);
 		}
 
 		@Override
-		public @NotNull Random split(@NotNull String seed) {
+		public @NotNull RandomSource fromHashOf(@NotNull String seed) {
 			return new RandomGeneratorRandom((long) seed.hashCode() ^ this.seed);
 		}
 
-		//@Override (overriding will break older MC versions)
-		public Random split(long seed) {
+		@Override
+		public @NonNull RandomSource fromSeed(long seed) {
 			return new RandomGeneratorRandom(seed);
 		}
 
 		@Override
 		@VisibleForTesting
-		public void addDebugInfo(@NotNull StringBuilder info) {
+		public void parityConfigString(@NotNull StringBuilder info) {
 			info.append("RandomGeneratorRandom$Splitter{").append(this.seed).append("}");
 		}
 	}

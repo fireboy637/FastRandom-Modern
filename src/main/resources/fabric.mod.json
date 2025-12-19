@@ -27,7 +27,6 @@
     "fasterrandom.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.15.11",
-    "minecraft": ">=1.19"
+    "minecraft": ">=26.1-alpha.1"
   }
 }
