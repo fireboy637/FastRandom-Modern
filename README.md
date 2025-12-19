@@ -1,3 +1,4 @@
+A port of Faster Random for Minecraft 26.1 and higher. 
 # Faster Random
 _**An optimization mod that reworks Minecraft's Random Generator System.**_
 
