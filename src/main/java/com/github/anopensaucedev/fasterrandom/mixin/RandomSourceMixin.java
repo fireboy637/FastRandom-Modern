@@ -11,15 +11,21 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(RandomSource.class)
-public interface RandomMixin {
+public interface RandomSourceMixin {
 	@Inject(method = "create(J)Lnet/minecraft/util/RandomSource;", at = @At(value = "HEAD"), cancellable = true)
 	private static void fasterrandom$createInject(long seed, @NotNull CallbackInfoReturnable<RandomSource> cir) {
 		cir.setReturnValue(new RandomGeneratorRandom(seed));
 	}
 
-	@Inject(method = "createNewThreadLocalInstance", at = @At(value = "HEAD"), cancellable = true)
+	@SuppressWarnings("deprecation")
+	@Inject(method = "createThreadLocalInstance()Lnet/minecraft/util/RandomSource;", at = @At(value = "HEAD"), cancellable = true)
 	private static void fasterrandom$createLocalInject(@NotNull CallbackInfoReturnable<RandomSource> cir) {
 		cir.setReturnValue(new RandomGeneratorRandom(ThreadLocalRandom.current().nextLong()));
+	}
+
+	@Inject(method = "createThreadLocalInstance(J)Lnet/minecraft/util/RandomSource;", at = @At(value = "HEAD"), cancellable = true)
+	private static void fasterrandom$createLocalInject(long seed, @NotNull CallbackInfoReturnable<RandomSource> cir) {
+		cir.setReturnValue(new RandomGeneratorRandom(seed));
 	}
 
 	@Inject(method = "createThreadSafe", at = @At(value = "HEAD"), cancellable = true)

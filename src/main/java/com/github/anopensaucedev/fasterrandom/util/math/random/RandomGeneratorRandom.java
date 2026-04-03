@@ -13,8 +13,8 @@ import org.jspecify.annotations.NonNull;
 
 public class RandomGeneratorRandom implements BitRandomSource {
 	private static final @NotNull RandomGeneratorFactory<RandomGenerator.SplittableGenerator> RANDOM_GENERATOR_FACTORY = RandomGeneratorFactoryUtil.getRandomGeneratorFactory();
-	private static final int INT_BITS = 48;
-	private static final long SEED_MASK = 0xFFFFFFFFFFFFL;
+	private static final int MODULUS_BITS = 48;
+	private static final long MODULUS_MASK = 281474976710655L;
 	private static final long MULTIPLIER = 25214903917L;
 	private static final long INCREMENT = 11L;
 
@@ -22,7 +22,7 @@ public class RandomGeneratorRandom implements BitRandomSource {
 	private RandomGenerator.SplittableGenerator randomGenerator;
 
 	public RandomGeneratorRandom(long seed) {
-		this.seed = seed;
+		setSeed(seed);
 		this.randomGenerator = RANDOM_GENERATOR_FACTORY.create(seed);
 	}
 
@@ -38,14 +38,16 @@ public class RandomGeneratorRandom implements BitRandomSource {
 
 	@Override
 	public void setSeed(long seed) {
-		this.seed = seed;
-		this.randomGenerator = RANDOM_GENERATOR_FACTORY.create(seed);
+		this.seed = (seed ^ MULTIPLIER) & MODULUS_MASK;
+		this.randomGenerator = RANDOM_GENERATOR_FACTORY.create(this.seed);
 	}
 
 	@Override
 	public int next(int bits) {
+		long newSeed = seed * MULTIPLIER + INCREMENT & MODULUS_MASK;
+		this.seed = newSeed;
 		// >>> instead of Mojang's >> fixes MC-239059
-		return (int) ((seed * MULTIPLIER + INCREMENT & SEED_MASK) >>> INT_BITS - bits);
+		return (int) (newSeed >>> MODULUS_BITS - bits);
 	}
 
 	@Override
